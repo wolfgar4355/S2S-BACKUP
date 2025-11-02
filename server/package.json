@@ -1,0 +1,11 @@
+{
+  "name": "s2s-ws",
+  "version": "1.0.0",
+  "type": "module",
+  "main": "index.js",
+  "scripts": { "start": "node index.js" },
+  "dependencies": {
+    "ws": "^8.18.0",
+    "nanoid": "^5.0.7"
+  }
+}

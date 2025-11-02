@@ -1,0 +1,241 @@
+
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Sheet2Scene V1.6 — Prototype</title>
+  <style>
+    body { font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial; }
+    .small { font-size: 12px; }
+    .panel { border:1px solid #ddd; border-radius:12px; padding:12px; background:#fff; box-shadow:0 10px 30px rgba(0,0,0,.08) }
+    button { border-radius:10px; padding:6px 10px; border:1px solid #aaa; background:#fafafa; cursor:pointer }
+    button:hover { background:#fff }
+    input, select { padding:6px 8px; border-radius:8px; border:1px solid #bbb; background:#fff }
+    canvas { background:#111; display:block; border-radius:12px }
+    #cmp{position:fixed; inset:0; background:rgba(0,0,0,.45); display:none; align-items:center; justify-content:center; z-index:50}
+  </style>
+</head>
+<body>
+
+<div style="position:sticky;top:0;background:var(--bg,#fff);z-index:20;border-bottom:1px solid #ddd;padding:8px 12px;display:flex;gap:12px;align-items:center;justify-content:space-between">
+  <div style="display:flex;gap:10px;align-items:center">
+    <strong>Sheet2Scene V1.6</strong>
+    <span id="planBadge" class="small" style="opacity:.7">NPC · USD</span>
+    <select id="planSelect">
+      <option>NPC</option><option>JOUEUR</option><option>DM</option><option>PARTY</option>
+    </select>
+    <select id="curSelect"><option>USD</option><option>CAD</option></select>
+    <button id="nightBtn">Mode Nuit</button>
+    <button id="soundBtn">Sons off</button>
+  </div>
+  <div id="adSlot" class="small" style="display:block;opacity:.8">[Annonce RPG] — modules, dés, figurines…</div>
+</div>
+
+<div id="home" style="max-width:980px;margin:24px auto">
+  <div class="panel" style="background:linear-gradient(135deg,#c9ccd1,#a8acb2); color:white; border-color:#888">
+    <h2 style="margin:0 0 6px 0">Sheet2Scene — Grimoire</h2>
+    <div class="small">Couverture cuir gris pâle • Titre embossé • Identifiez-vous ou utilisez <b>Invité (limité)</b></div>
+    <div style="display:flex; gap:8px; margin-top:8px">
+      <input id="email" placeholder="Email"/>
+      <input id="pass" type="password" placeholder="Mot de passe"/>
+      <button id="openBookBtn">Se connecter</button>
+      <button id="guestBtn">Invité (limité)</button>
+    </div>
+  </div>
+
+  <div id="book" style="display:none; margin-top:12px" class="panel">
+    <div style="display:flex; gap:16px">
+      <div style="flex:1">
+        <h3>Table des matières</h3>
+        <div id="worlds" style="display:grid; grid-template-columns:1fr 1fr; gap:8px"></div>
+      </div>
+      <div style="flex:1">
+        <h3>Générateurs</h3>
+        <div id="gens" style="display:grid; gap:6px">
+          <button data-open="#editor" class="small">Éditeur de scène (portes, lumières & labels)</button>
+          <button data-open="#market" class="small">Marketplace (packs CC0)</button>
+          <button data-open="#billing" class="small">Facturation & Devis</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="editor" style="max-width:1100px;margin:16px auto;display:grid;grid-template-columns:320px 1fr;gap:16px">
+  <div class="panel">
+    <h3>Éditeur Portes, Lumières & Labels</h3>
+    <div style="display:flex; gap:6px; flex-wrap:wrap; margin-bottom:8px">
+      <button id="modeDoor">Mode: Porte</button>
+      <button id="modeLight">Mode: Lumière</button>
+      <button id="modeLabel">Mode: Label</button>
+      <button id="btnUndo">Annuler</button>
+      <button id="btnExportScene">Exporter Scene</button>
+      <button id="btnRoll20">Export Roll20 (PNG)</button>
+    </div>
+    <div class="small" style="margin-bottom:6px">Clique pour ajouter (Porte: Shift = verticale). Label: double‑clic pour renommer, glisser pour déplacer, clic droit pour supprimer.</div>
+    <div class="panel small" style="margin-top:6px">
+      <strong>Style Label</strong><br>
+      Catégorie <select id="labelCat"><option>Ville</option><option>Donjon</option><option>Ruine</option><option>Note</option></select>
+      Couleur <input id="labelColor" type="color" value="#000000"/>
+      Taille <input id="labelSize" type="number" value="12" min="8" max="24" style="width:60px"/>
+    </div>
+    <div class="panel small" style="margin-top:6px">
+      <strong>Image & Grille</strong><br>
+      URL <input id="eImg" placeholder="https://..." value="https://picsum.photos/1024/768"/><br>
+      Grille (px) <input id="eGrid" type="number" value="70" style="width:80px"/> Largeur <input id="eW" type="number" value="1024" style="width:96px"/> Hauteur <input id="eH" type="number" value="768" style="width:96px"/>
+    </div>
+  </div>
+  <div class="panel">
+    <canvas id="canvas" width="1024" height="768"></canvas>
+  </div>
+
+  <div id="market" class="panel">
+    <h3>Marketplace (CC0 / maison)</h3>
+    <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap">
+      <button id="btnMarket">Lister les packs</button>
+      <ul id="marketList" class="small" style="margin:6px 0 0 0; padding-left:18px"></ul>
+    </div>
+  </div>
+
+  <div id="billing" class="panel">
+    <h3>Facturation (aperçu)</h3>
+    <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap">
+      <button id="btnPlans">Charger plans</button>
+      <button id="btnQuote3">Devis Party 3 sièges</button>
+      <span id="plansOut" class="small" style="opacity:.8"></span>
+    </div>
+  </div>
+</div>
+
+<div id="cmp">
+  <div class="panel" style="max-width:520px">
+    <h3>Publicités (palier gratuit)</h3>
+    <div class="small">Nous affichons des pubs liées aux RPG. Choisis ce que tu acceptes :</div>
+    <label class="small"><input type="checkbox" id="cmp_rpg" checked> RPG & accessoires</label><br>
+    <label class="small"><input type="checkbox" id="cmp_games" checked> Jeux vidéo (RPG)</label><br>
+    <label class="small"><input type="checkbox" id="cmp_other"> Autres (non-RPG)</label><br>
+    <div style="display:flex; gap:8px; margin-top:8px">
+      <button id="cmp_accept">Accepter</button>
+      <button id="cmp_reject">Rejeter</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  let CURRENT_PLAN = 'NPC'; let CURRENT_CURRENCY='USD'; let NIGHT=false; let SOUND=false; let TOKEN = localStorage.getItem('s2s_token') || null; let CONSENT = JSON.parse(localStorage.getItem('s2s_ads')||'{}');
+  const canvas=document.getElementById('canvas'); const ctx=canvas.getContext('2d');
+  let img=new Image(); img.crossOrigin='anonymous';
+  let mode='door', grid=70;
+  let doors=[], lights=[], labels=[];
+
+  function planBadge(){ return CURRENT_PLAN + (CURRENT_CURRENCY==='CAD'?' · CAD':' · USD'); }
+  function applyTheme(){ document.documentElement.style.setProperty('--bg', NIGHT? '#101418' : '#ffffff'); document.body.style.background = NIGHT? 'radial-gradient(100% 160% at 50% 0%, #1a1f25, #0f1216)' : ''; document.body.style.color = NIGHT? '#e8e8e8' : ''; }
+  function syncTopBar(){ document.getElementById('planBadge').textContent = planBadge(); document.getElementById('adSlot').style.display = (CURRENT_PLAN==='NPC')? 'block':'none'; applyTheme(); }
+  async function ensureGuest(){ if (!TOKEN){ const r = await fetch('/api/auth/anon', {method:'POST'}); const j = await r.json(); if (j.ok){ TOKEN = j.token; localStorage.setItem('s2s_token', TOKEN); } } }
+  function showCMPIfNeeded(){ if (CURRENT_PLAN==='NPC' && !CONSENT.accepted){ document.getElementById('cmp').style.display='flex'; } }
+  function saveConsent(accept){ CONSENT = { accepted: !!accept, rpg: document.getElementById('cmp_rpg').checked, games: document.getElementById('cmp_games').checked, other: document.getElementById('cmp_other').checked }; localStorage.setItem('s2s_ads', JSON.stringify(CONSENT)); document.getElementById('cmp').style.display='none'; }
+  async function useOneGeneration(plan){ const r = await fetch('/api/billing/usage',{ method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ userId: TOKEN||'guest', plan }) }); const j = await r.json(); if(!j.ok){ alert('Limite atteinte aujourd\\'hui pour le plan '+plan+' (cap '+j.cap+').'); return false; } return true; }
+
+  // Home / book
+  document.getElementById('openBookBtn').onclick = ()=>{ document.getElementById('book').style.display='block'; };
+  document.getElementById('guestBtn').onclick = async ()=>{ await ensureGuest(); CURRENT_PLAN='NPC'; syncTopBar(); document.getElementById('book').style.display='block'; showCMPIfNeeded(); };
+  document.querySelectorAll('[data-open]').forEach(btn=>btn.addEventListener('click',()=>{ const sel = btn.getAttribute('data-open'); const el = document.querySelector(sel); if (el) el.scrollIntoView({ behavior:'smooth'}); }));
+
+  // Worlds list
+  const WORLDS = ['Classic Fantasy','Urban Horror','Grimdark','Sci‑Fantasy','Désert','Arctique','Archipel','Jungle','Volcan','Cité','Marais'];
+  const worldsEl = document.getElementById('worlds'); WORLDS.forEach(w=>{ const b=document.createElement('button'); b.textContent=w; b.className='small'; worldsEl.appendChild(b); });
+
+  // Top bar controls
+  document.getElementById('planSelect').addEventListener('change', (e)=>{ CURRENT_PLAN = e.target.value; syncTopBar(); showCMPIfNeeded(); });
+  document.getElementById('curSelect').addEventListener('change', (e)=>{ CURRENT_CURRENCY = e.target.value; syncTopBar(); });
+  document.getElementById('nightBtn').addEventListener('click', ()=>{ NIGHT=!NIGHT; syncTopBar(); });
+  document.getElementById('soundBtn').addEventListener('click', (ev)=>{ SOUND=!SOUND; ev.target.textContent = SOUND? 'Sons on':'Sons off'; });
+  document.getElementById('cmp_accept').onclick = ()=> saveConsent(true);
+  document.getElementById('cmp_reject').onclick = ()=> saveConsent(false);
+  syncTopBar();
+
+  // Editor
+  function draw(){
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    if (img && img.complete) ctx.drawImage(img,0,0,canvas.width,canvas.height);
+    // grid overlay (Roll20)
+    ctx.strokeStyle = 'rgba(255,255,255,.2)'; ctx.lineWidth = 1;
+    for(let x=0;x<canvas.width;x+=grid){ ctx.beginPath(); ctx.moveTo(x,0); ctx.lineTo(x,canvas.height); ctx.stroke(); }
+    for(let y=0;y<canvas.height;y+=grid){ ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(canvas.width,y); ctx.stroke(); }
+    // doors
+    ctx.strokeStyle='#cc3333'; ctx.lineWidth=3; doors.forEach(d=>{ ctx.beginPath(); ctx.moveTo(d.x1,d.y1); ctx.lineTo(d.x2,d.y2); ctx.stroke(); });
+    // lights
+    ctx.fillStyle='rgba(255,215,0,0.35)'; lights.forEach(l=>{ ctx.beginPath(); ctx.arc(l.x,l.y, Math.max(6, Math.min(24, (l.bright||10))), 0, Math.PI*2); ctx.fill(); });
+    // labels
+    labels.forEach(l=>{ ctx.fillStyle=l.color||'rgba(0,0,0,0.75)'; ctx.font=(l.size||12)+'px serif'; const prefix = (l.cat==='Ville'?'🏙':(l.cat==='Donjon'?'🏰':(l.cat==='Ruine'?'🗿':'✎')))+' '; ctx.fillText(prefix+(l.name||'Label'), l.x+4, l.y-4); ctx.beginPath(); ctx.arc(l.x,l.y,3,0,Math.PI*2); ctx.fill(); });
+  }
+  function reloadImage(){ img.onload=draw; const url=document.getElementById('eImg').value; img.src=url; canvas.width=Number(document.getElementById('eW').value); canvas.height=Number(document.getElementById('eH').value); grid=Number(document.getElementById('eGrid').value); }
+  document.getElementById('eImg').addEventListener('change', reloadImage);
+  ['eW','eH','eGrid'].forEach(id=>document.getElementById(id).addEventListener('change', reloadImage));
+  reloadImage();
+
+  document.getElementById('modeDoor').onclick = ()=>{ mode='door'; };
+  document.getElementById('modeLight').onclick = ()=>{ mode='light'; };
+  document.getElementById('modeLabel').onclick = ()=>{ mode='label'; };
+
+  let draggingLabelIndex=-1, dragOffset=[0,0];
+  function labelHit(x,y){ let idx=-1, best=9999; labels.forEach((lb,i)=>{ const d=Math.hypot(lb.x-x, lb.y-y); if(d<best && d<12){ best=d; idx=i; } }); return idx; }
+
+  canvas.addEventListener('click', async (e)=>{
+    // Respect caps
+    if(!(await useOneGeneration(CURRENT_PLAN))) return;
+    const rect=canvas.getBoundingClientRect(); const x=e.clientX-rect.left, y=e.clientY-rect.top;
+    if (mode==='door') { const len=Math.max(12, grid*0.6); const vert = e.shiftKey; const d = vert? {x1:x, y1:y-len/2, x2:x, y2:y+len/2} : {x1:x-len/2, y1:y, x2:x+len/2, y2:y}; doors.push(d); }
+    else if (mode==='light') { lights.push({ x:x, y:y, dim:grid*0.6, bright:grid*0.3 }); }
+    else if (mode==='label') { labels.push({ x:x, y:y, name:'Label', cat: document.getElementById('labelCat').value, color: document.getElementById('labelColor').value, size: Number(document.getElementById('labelSize').value) }); }
+    draw();
+  });
+  canvas.addEventListener('mousedown', (e)=>{ if(mode!=='label') return; const rect=canvas.getBoundingClientRect(); const x=e.clientX-rect.left, y=e.clientY-rect.top; const idx=labelHit(x,y); if(idx>=0){ draggingLabelIndex=idx; dragOffset=[x-labels[idx].x, y-labels[idx].y]; } });
+  canvas.addEventListener('mousemove', (e)=>{ if(draggingLabelIndex>=0){ const rect=canvas.getBoundingClientRect(); const x=e.clientX-rect.left, y=e.clientY-rect.top; labels[draggingLabelIndex].x=x-dragOffset[0]; labels[draggingLabelIndex].y=y-dragOffset[1]; draw(); } });
+  canvas.addEventListener('mouseup', ()=>{ draggingLabelIndex=-1; });
+  canvas.addEventListener('dblclick', (e)=>{ if(mode!=='label') return; const rect=canvas.getBoundingClientRect(); const x=e.clientX-rect.left, y=e.clientY-rect.top; const idx=labelHit(x,y); if(idx>=0){ const nv=prompt('Renommer le label:', labels[idx].name||'Label'); if(nv!==null){ labels[idx].name=nv; draw(); } } });
+  canvas.addEventListener('contextmenu', (e)=>{ if(mode!=='label') return; e.preventDefault(); const rect=canvas.getBoundingClientRect(); const x=e.clientX-rect.left, y=e.clientY-rect.top; const idx=labelHit(x,y); if(idx>=0){ labels.splice(idx,1); draw(); } });
+
+  document.getElementById('btnUndo').onclick = ()=>{ if (mode==='door' && doors.length) doors.pop(); else if (mode==='light' && lights.length) lights.pop(); else if (mode==='label' && labels.length) labels.pop(); draw(); };
+  document.getElementById('btnExportScene').onclick = async ()=>{
+    const payload = { name:'Edited Scene', img: document.getElementById('eImg').value, width: Number(document.getElementById('eW').value), height: Number(document.getElementById('eH').value), gridSize: Number(document.getElementById('eGrid').value), walls: [], doors, lights, labels };
+    const r = await fetch('/api/export/scene', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload)});
+    const j = await r.json();
+    const fBlob = new Blob([JSON.stringify(j.foundry,null,2)], {type:'application/json'});
+    const uBlob = new Blob([JSON.stringify(j.uvtt,null,2)], {type:'application/json'});
+    const a1 = document.createElement('a'); a1.href = URL.createObjectURL(fBlob); a1.download = 'scene_foundry.json'; a1.click();
+    const a2 = document.createElement('a'); a2.href = URL.createObjectURL(uBlob); a2.download = 'scene.uvtt.json'; a2.click();
+    alert('Exports téléchargés.');
+  };
+  document.getElementById('btnRoll20').onclick = ()=>{ const url = canvas.toDataURL('image/png'); const a = document.createElement('a'); a.href = url; a.download = `roll20_map_${canvas.width}x${canvas.height}_g${grid}.png`; a.click(); };
+
+  // Marketplace & billing demos
+  async function getJSON(url, opts){ const r = await fetch(url, opts||{}); if(!r.ok) throw new Error('HTTP '+r.status); return r.json(); }
+  document.getElementById('btnMarket').onclick = async ()=>{
+    const j = await getJSON('/api/market/list'); const ul = document.getElementById('marketList'); ul.innerHTML=''; j.packs.forEach(p=>{ const li=document.createElement('li'); li.textContent = p.name+' — '+(p.desc||''); const a=document.createElement('a'); a.href='/api/market/download/'+p.id; a.textContent=' Télécharger'; a.style.marginLeft='6px'; li.appendChild(a); ul.appendChild(li); }); };
+  document.getElementById('btnPlans').onclick = async ()=>{ const data = await getJSON('/api/billing/plans?currency='+CURRENT_CURRENCY); document.getElementById('plansOut').textContent = 'Plans '+data.currency+': JOUEUR $'+data.pricing.JOUEUR.monthly+'/mo, DM $'+data.pricing.DM.monthly+'/mo, PARTY $'+data.pricing.PARTY.monthly+'/mo'; };
+  document.getElementById('btnQuote3').onclick = async ()=>{ const data = await getJSON('/api/billing/party/quote', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ seats:3, currency: CURRENT_CURRENCY, cycle:'monthly' }) }); document.getElementById('plansOut').textContent = 'Party 3 sièges '+data.currency+': total '+data.total+' → parts '+data.shares.join(' / '); };
+
+  // CMP handlers
+  document.getElementById('cmpAccept').onclick = ()=>{ localStorage.setItem('cmp-ok','1'); cmpSync(); };
+  document.getElementById('cmpDecline').onclick = ()=>{ localStorage.removeItem('cmp-ok'); cmpSync(); };
+
+  // Guest
+  const guestBtn = document.getElementById('guestBtn');
+  if (guestBtn) guestBtn.onclick = async ()=>{
+    const r = await fetch('/api/auth/guest',{method:'POST'}); const j = await r.json();
+    if (j.ok){ USER.id=j.userId; USER.plan=j.plan; alert('Mode invité: 2 créations/jour, pas d\'export.'); document.getElementById('planBadge').textContent = USER.plan + ' · ' + (CURRENT_CURRENCY||'USD'); }
+  };
+
+  // Stub login -> NPC Free
+  const openBtn = document.getElementById('openBookBtn');
+  if (openBtn) openBtn.addEventListener('click', async ()=>{
+    const r = await fetch('/api/auth/login',{method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ email: (document.getElementById('email')||{}).value || 'guest@example.com' })});
+    const j = await r.json(); if (j.ok){ USER.id=j.userId; USER.plan=j.plan; document.getElementById('planBadge').textContent = USER.plan + ' · ' + (CURRENT_CURRENCY||'USD'); }
+  });
+
+</script>
+
+</body>
+</html>

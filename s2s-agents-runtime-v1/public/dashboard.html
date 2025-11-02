@@ -1,0 +1,58 @@
+<!doctype html>
+<html><head><meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Sheet2Scene — Agents Dashboard</title>
+<style>
+  body{margin:0;background:#0f1115;color:#eaeef3;font-family:system-ui,Arial,sans-serif}
+  .wrap{max-width:1100px;margin:32px auto;padding:0 12px}
+  .card{background:#161b22;border:1px solid #2a3542;border-radius:14px;padding:16px;margin-bottom:14px}
+  input,textarea,select{background:#0f131a;color:#eaeef3;border:1px solid #2a3542;border-radius:10px;padding:8px}
+  button{background:#b48a3c;color:#fff;border:1px solid #946f2f;border-radius:10px;padding:9px 14px;cursor:pointer}
+  pre{white-space:pre-wrap;background:#0f131a;border:1px solid #2a3542;border-radius:10px;padding:10px}
+  h2{margin:8px 0}
+</style>
+</head><body><div class="wrap">
+  <div class="card">
+    <h2>👤 Team (with AI agents)</h2>
+    <pre id="team"></pre>
+  </div>
+  <div class="card">
+    <h2>🎨 DA — Brief</h2>
+    <div>Goals <input id="goals" style="width:60%"/></div>
+    <div>Audience <input id="aud" style="width:60%"/></div>
+    <div>Constraints <input id="con" style="width:60%"/></div>
+    <button onclick="brief()">Send Brief</button>
+    <pre id="da_out"></pre>
+  </div>
+  <div class="card">
+    <h2>🖌️ Designer — Tasks</h2>
+    <textarea id="assets" rows="4" style="width:100%" placeholder='[{"type":"icon","name":"pnj","sizes":["64x64","128x128"]}]'></textarea>
+    <button onclick="tasks()">Create Tasks</button>
+    <pre id="des_out"></pre>
+  </div>
+  <div class="card">
+    <h2>🧱 Tech/3D — Optimize</h2>
+    <textarea id="inputs" rows="3" style="width:100%" placeholder='{"inputs":["/assets/models/ship.glb"],"targets":["webgl"]}'></textarea>
+    <button onclick="opt()">Optimize</button>
+    <pre id="tech_out"></pre>
+  </div>
+</div>
+<script>
+async function brief(){
+  const body = {goals:goals.value,audience:aud.value,constraints:con.value};
+  const r = await fetch('/agents/da/brief',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+  da_out.textContent = JSON.stringify(await r.json(), null, 2);
+}
+async function tasks(){
+  let payload = {}; try{ payload = {assets: JSON.parse(assets.value)} }catch(e){ alert('JSON invalide'); return; }
+  const r = await fetch('/agents/designer/tasks',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
+  des_out.textContent = JSON.stringify(await r.json(), null, 2);
+}
+async function opt(){
+  let p={}; try{ p = JSON.parse(inputs.value) }catch(e){ alert('JSON invalide'); return; }
+  const r = await fetch('/agents/tech3d/optimize',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(p)});
+  tech_out.textContent = JSON.stringify(await r.json(), null, 2);
+}
+fetch('/docs/team_manifest.json').then(r=>r.json()).then(j=> team.textContent = JSON.stringify(j,null,2));
+</script>
+</body></html>

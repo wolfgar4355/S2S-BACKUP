@@ -1,0 +1,88 @@
+import http from 'node:http';
+import { parse as parseUrl } from 'node:url';
+
+const HOST = '127.0.0.1';
+const PORT = 4001;
+
+function setCors(res) {
+  res.setHeader('Access-Control-Allow-Origin', '*'); // OK en local
+  res.setHeader('Access-Control-Allow-Methods', 'GET,POST,OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+}
+
+function sendJson(res, code, obj) {
+  const body = JSON.stringify(obj);
+  res.statusCode = code;
+  res.setHeader('Content-Type', 'application/json; charset=utf-8');
+  res.setHeader('Content-Length', Buffer.byteLength(body));
+  res.end(body);
+}
+
+function notFound(res) {
+  res.statusCode = 404;
+  res.setHeader('Content-Type', 'text/plain; charset=utf-8');
+  res.end('Not found');
+}
+
+function readJson(req) {
+  return new Promise((resolve, reject) => {
+    let data = '';
+    req.on('data', chunk => (data += chunk));
+    req.on('end', () => {
+      if (!data) return resolve({});
+      try { resolve(JSON.parse(data)); }
+      catch (e) { reject(e); }
+    });
+    req.on('error', reject);
+  });
+}
+
+const server = http.createServer(async (req, res) => {
+  setCors(res);
+  const { pathname } = parseUrl(req.url || '/', true);
+
+  if (req.method === 'OPTIONS') {
+    res.statusCode = 204;
+    return res.end();
+  }
+
+  // Santé
+  if (req.method === 'GET' && pathname === '/api/health') {
+    return sendJson(res, 200, { ok: true, ts: Date.now() });
+  }
+
+  // Generate (neutre & légal)
+  if (req.method === 'POST' && pathname === '/api/generate') {
+    try {
+      const body = await readJson(req);
+      const kind = (body && body.kind) || 'generic';
+      const input = (body && body.input) || {};
+      const stamp = new Date().toISOString().slice(0,19).replace('T',' ');
+      const title = input.title || input.name || (kind.charAt(0).toUpperCase()+kind.slice(1)) + ' Draft';
+      const party = input.party || '?';
+      const lvl   = input.level || input.tier || '?';
+      const theme = input.theme || input.type || input.cat || 'adventure';
+
+      const synopsis =
+`[[${kind.toUpperCase()}]] ${stamp}
+Party: ${party} • Level/Tier: ${lvl}
+Theme: ${theme}
+
+Synopsis:
+A system-agnostic, legally neutral ${kind} outline based on the provided fields.
+Focus on original names, generic mechanics, and reusable structure (no copyrighted stat blocks or lore).`;
+
+      return sendJson(res, 200, { ok: true, result: { kind, title, synopsis, text: synopsis } });
+    } catch {
+      return sendJson(res, 400, { ok: false, error: 'Bad JSON' });
+    }
+  }
+
+  // Par défaut
+  return notFound(res);
+});
+
+// Démarre (et message lisible)
+server.listen(PORT, HOST, () => {
+  console.log(`[server] listening on http://${HOST}:${PORT}`);
+});

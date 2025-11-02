@@ -1,0 +1,19 @@
+{
+  "name": "sheet2scene",
+  "private": true,
+  "scripts": {
+    "start:mock": "node server/index.cjs",
+    "dev:web": "cd apps/web && npm run dev",
+    "api": "npm run start:mock",
+    "web": "npm run dev:web",
+    "dev:all": "concurrently -n API,WEB -c cyan,magenta \"npm:api\" \"npm:web\"",
+    "dev:modules": "cd server/modules/quests && node index.cjs --demo"
+  },
+  "devDependencies": {
+    "concurrently": "^9.0.0"
+  },
+  "dependencies": {
+    "ws": "^8.18.0",
+    "nanoid": "^5.0.7"
+  }
+}

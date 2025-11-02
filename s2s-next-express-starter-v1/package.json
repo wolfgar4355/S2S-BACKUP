@@ -1,0 +1,14 @@
+{
+  "name": "s2s-next-express-starter",
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "server"
+  ],
+  "scripts": {
+    "dev": "npm run -w server dev & npm run -w apps/web dev",
+    "build": "npm -w apps/web run build",
+    "start": "npm -w server start & npm -w apps/web start"
+  },
+  "devDependencies": {}
+}

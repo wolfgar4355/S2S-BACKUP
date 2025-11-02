@@ -1,0 +1,64 @@
+{
+  "version": "0.1.1",
+  "brand": "Sheet2Scene",
+  "palette": {
+    "primary": {
+      "50": "#FFF3E0",
+      "100": "#FFE0B2",
+      "300": "#FFB74D",
+      "500": "#B48A3C",
+      "700": "#946F2F"
+    },
+    "accent": {
+      "500": "#CC2020"
+    },
+    "surface": {
+      "bg": "#0F1115",
+      "card": "#161B22",
+      "border": "#2A3542",
+      "muted": "#A9B4C0"
+    },
+    "text": {
+      "primary": "#EAEFF5",
+      "secondary": "#C8D1DB",
+      "inverse": "#0F1115"
+    }
+  },
+  "typography": {
+    "fontFamily": {
+      "heading": "system-ui, Arial, sans-serif",
+      "body": "system-ui, Arial, sans-serif"
+    },
+    "scale": {
+      "xs": 12,
+      "sm": 14,
+      "base": 16,
+      "md": 18,
+      "lg": 22,
+      "xl": 28,
+      "2xl": 34,
+      "3xl": 42
+    }
+  },
+  "elevation": {
+    "sm": "0 2px 6px rgba(0,0,0,.18)",
+    "md": "0 6px 18px rgba(0,0,0,.24)"
+  },
+  "radius": {
+    "sm": 8,
+    "md": 12,
+    "lg": 20,
+    "xl": 28
+  },
+  "space": {
+    "xs": 4,
+    "sm": 8,
+    "md": 12,
+    "lg": 16,
+    "xl": 24,
+    "2xl": 32
+  },
+  "grid": {
+    "base": 8
+  }
+}

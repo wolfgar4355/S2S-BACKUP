@@ -1,0 +1,72 @@
+{
+  "team_name": "Sheet2Scene — Core",
+  "members": [
+    {
+      "name": "Victor",
+      "role": "Lead Front-End / UI",
+      "location": "Saguenay",
+      "type": "human"
+    },
+    {
+      "name": "James",
+      "role": "Directeur Marketing",
+      "location": "Montréal",
+      "type": "human"
+    },
+    {
+      "name": "Logan",
+      "role": "Juridique (Avocat & Notaire)",
+      "type": "human"
+    },
+    {
+      "name": "Rebecca",
+      "role": "Finance (CPA)",
+      "type": "human"
+    },
+    {
+      "name": "Jean-François Lacoste",
+      "role": "Testeur",
+      "type": "human"
+    },
+    {
+      "name": "Sébastien Courtemanche",
+      "role": "Testeur",
+      "type": "human"
+    }
+  ],
+  "agents": [
+    {
+      "id": "agent_DA",
+      "name": "DA (Art Director)",
+      "type": "ai",
+      "owner": "Design",
+      "prompt_file": "prompts/DA_system.txt",
+      "endpoints": [
+        "/agents/da/brief",
+        "/agents/da/tokens"
+      ]
+    },
+    {
+      "id": "agent_DES",
+      "name": "Designer/Illustrator",
+      "type": "ai",
+      "owner": "Design",
+      "prompt_file": "prompts/Designer_system.txt",
+      "endpoints": [
+        "/agents/designer/tasks",
+        "/agents/designer/assets"
+      ]
+    },
+    {
+      "id": "agent_3D",
+      "name": "Tech/3D Artist",
+      "type": "ai",
+      "owner": "Tech",
+      "prompt_file": "prompts/Tech3D_system.txt",
+      "endpoints": [
+        "/agents/tech3d/optimize",
+        "/agents/tech3d/build"
+      ]
+    }
+  ]
+}

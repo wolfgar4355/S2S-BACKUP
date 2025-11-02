@@ -1,0 +1,16 @@
+const express = require('express');
+const app = express();
+
+app.get('/api/health', (_req, res) => {
+  res.json({ ok: true, ts: Date.now() });
+});
+
+app.get('/', (_req, res) => {
+  res.send('API OK');
+});
+
+const PORT = process.env.PORT || 4001;
+const HOST = '127.0.0.1';
+app.listen(PORT, HOST, () => {
+  console.log(`[server] listening on http://${HOST}:${PORT}`);
+});

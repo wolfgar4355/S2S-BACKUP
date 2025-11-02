@@ -1,0 +1,28 @@
+version: "3.9"
+services:
+  web:
+    build: ./web
+    env_file: [.env]
+    ports:
+      - "127.0.0.1:3000:3000"
+    restart: unless-stopped
+
+  orchestrator:
+    build: ./orchestrator
+    env_file: [.env]
+    command: ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8080"]
+    restart: unless-stopped
+
+  caddy:
+    image: caddy:2.7
+    ports: ["80:80", "443:443"]
+    volumes:
+      - ./proxy/Caddyfile:/etc/caddy/Caddyfile
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on: [web, orchestrator]
+    restart: unless-stopped
+
+volumes:
+  caddy_data:
+  caddy_config:

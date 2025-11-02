@@ -1,0 +1,90 @@
+
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Sheet2Scene V1.6 — Grimoire React</title>
+  <style>
+    html,body{margin:0;padding:0;background:radial-gradient(120% 120% at 50% 10%, #eef2f7 0%, #e6e8ec 45%, #d9dbe0 100%); font-family:ui-sans-serif,system-ui;-webkit-font-smoothing:antialiased}
+    .shell{max-width:1100px;margin:18px auto;padding:0 12px}
+    .book{display:flex; gap:12px; perspective:1600px}
+    .page{flex:1; background:radial-gradient(120% 120% at 30% 30%, #f7f1e3 0%, #e6dcc6 100%); border-radius:18px; box-shadow:0 10px 30px rgba(0,0,0,.18); padding:16px; position:relative; min-height:560px}
+    .tile{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:10px;border:1px solid #ddd;border-radius:12px;background:#fff; margin-bottom:8px}
+    .btn{border:1px solid #aaa;background:#fafafa;border-radius:10px;padding:6px 10px;cursor:pointer}
+    .btn:hover{background:#fff}
+    .small{font-size:12px;opacity:.8}
+    .toolbar{position:sticky; top:0; display:flex; justify-content:space-between; align-items:center; gap:8px; padding:8px 0}
+    canvas{background:#0f1115;border-radius:12px;display:block}
+    #cmp{position:fixed;inset:0;background:rgba(0,0,0,.45);display:none;align-items:center;justify-content:center;z-index:50}
+  </style>
+  <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+  <script src="https://unpkg.com/framer-motion@10.16.4/dist/framer-motion.umd.js"></script>
+  <script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
+</head>
+<body>
+  <div id="root"></div>
+  <div id="cmp"><div style="max-width:520px" class="tile"><div><strong>Publicités (palier gratuit)</strong><div class="small">Nous affichons des pubs liées aux RPG. Choisis ce que tu acceptes :</div><label class="small"><input type="checkbox" id="cmp_rpg" checked> RPG & accessoires</label><br><label class="small"><input type="checkbox" id="cmp_games" checked> Jeux vidéo (RPG)</label><br><label class="small"><input type="checkbox" id="cmp_other"> Autres (non-RPG)</label><br></div><div><button id="cmp_accept" class="btn">Accepter</button><button id="cmp_reject" class="btn">Rejeter</button></div></div></div>
+  <script type="text/babel">
+
+const { motion } = window.FramerMotion;
+const store = { token: localStorage.getItem('s2s_token') || null, consent: JSON.parse(localStorage.getItem('s2s_ads')||'{}'), plan: 'NPC', currency: 'USD' };
+
+async function ensureGuest(){ if(!store.token){ const r= await fetch('/api/auth/anon',{method:'POST'}); const j= await r.json(); if(j.ok){ store.token=j.token; localStorage.setItem('s2s_token', store.token); } } }
+function showCMPIfNeeded(){ if(store.plan==='NPC' && !store.consent.accepted){ document.getElementById('cmp').style.display='flex'; } }
+function saveConsent(accept){ store.consent = { accepted: !!accept, rpg: document.getElementById('cmp_rpg').checked, games: document.getElementById('cmp_games').checked, other: document.getElementById('cmp_other').checked }; localStorage.setItem('s2s_ads', JSON.stringify(store.consent)); document.getElementById('cmp').style.display='none'; }
+async function useOneGeneration(plan){ const r = await fetch('/api/billing/usage',{ method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ userId: store.token || 'guest', plan }) }); const j = await r.json(); if(!j.ok){ alert('Limite atteinte aujourd\\'hui pour le plan '+plan+' (cap '+j.cap+').'); return false; } return true; }
+window.addEventListener('DOMContentLoaded', ()=>{ document.getElementById('cmp_accept').onclick=()=>saveConsent(true); document.getElementById('cmp_reject').onclick=()=>saveConsent(false); });
+
+function Cover({ onOpen, onGuest }){
+  return (
+    <motion.div initial={{rotateX:-8,opacity:0}} animate={{rotateX:0,opacity:1}} transition={{duration:0.6}} style={{background:`linear-gradient(135deg,#bfc1c4,#9fa2a7)`,borderRadius:24,boxShadow:'0 25px 60px rgba(0,0,0,.28)',padding:16}}>
+      <h1 style={{textTransform:'uppercase',letterSpacing:'.08em', color:'#f5f5f5', textShadow:'0 2px 0 rgba(0,0,0,.35), 0 -1px 0 rgba(255,255,255,.15), 0 8px 18px rgba(0,0,0,.45)'}}>Sheet2Scene</h1>
+      <div style={{height:2,background:'linear-gradient(90deg,#b48a3c,#8a6b2e)',opacity:.6, borderRadius:999}}/>
+      <div style={{maxWidth:420, margin:'16px auto', background:'rgba(255,255,255,.08)', border:'1px solid rgba(255,255,255,.2)', borderRadius:16, padding:16}}>
+        <p className="small" style={{color:'#fff'}}>Identifie‑toi pour ouvrir le grimoire</p>
+        <div style={{display:'grid',gap:8}}>
+          <input placeholder="Email" style={{padding:'8px 10px', borderRadius:12,border:'1px solid #ddd'}}/>
+          <input type="password" placeholder="Mot de passe" style={{padding:'8px 10px', borderRadius:12,border:'1px solid #ddd'}}/>
+          <button className="btn" onClick={onOpen}>Se connecter</button>
+          <button className="btn" onClick={onGuest}>Invité (limité)</button>
+        </div>
+      </div>
+    </motion.div>
+  );
+}
+
+function App(){
+  const [signed,setSigned]=React.useState(false);
+  const [role, setRole] = React.useState('player');
+  React.useEffect(()=>{ /* init */ },[]);
+  React.useEffect(()=>{ const sel=document.getElementById('planSel'); if(sel){ sel.value=store.plan; sel.onchange=()=>{ store.plan=sel.value; document.getElementById('adBadge').style.display = (store.plan==='NPC')?'inline-block':'none'; showCMPIfNeeded(); }; } document.getElementById('adBadge').style.display = (store.plan==='NPC')?'inline-block':'none'; }, [signed]);
+  return (
+    <div className="shell">
+      <div className="toolbar" id="topbar">
+        <div><strong>Sheet2Scene — Grimoire React</strong> <span className="small">({role==='dm'?'DM':'Joueur'})</span></div>
+        <div className="small">Plan <select id="planSel"><option>NPC</option><option>JOUEUR</option><option>DM</option><option>PARTY</option></select> <span id="adBadge" style={{marginLeft:8, display:'none'}}>[Pubs RPG]</span> Rôle: <button className="btn" onClick={()=>setRole(role==='dm'?'player':'dm')}>{role==='dm'?'Passer Joueur':'Passer DM'}</button></div>
+      </div>
+      {!signed ? <Cover onOpen={()=>setSigned(true)} onGuest={async()=>{ await ensureGuest(); setSigned(true); showCMPIfNeeded(); }} /> : (
+        <div className="book">
+          <div className="page">
+            <h3>Table des matières</h3>
+            <div className="small">Version React simplifiée (TOC & panels). Les exports & caps sont disponibles côté client vanilla.</div>
+          </div>
+          <div className="page">
+            <h3>Démo PNJ</h3>
+            <button className="btn" onClick={async()=>{ if(!(await useOneGeneration(store.plan))) return; const r = await fetch('/api/pnj/generate',{method:'POST'}); const j = await r.json(); alert('PNJ généré: '+j.pnj.name); }}>Générer PNJ</button>
+            {(role==='player') && <div className="small" style={{marginTop:8, color:'#b00'}}>Certaines sections (Quêtes, Monstres/Loot, Éditeur) sont DM‑only.</div>}
+          </div>
+        </div>
+      )}
+      <p className="small" style={{marginTop:12}}>Prototype non-marquée. Exports/Marketplace/Facturation complets dans le client HTML.</p>
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
+  </script>
+</body>
+</html>

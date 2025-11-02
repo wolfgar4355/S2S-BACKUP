@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+# Shim neutre : répond à -v/--version, sinon "no-op" (code 0)
+case "$1" in
+  -v|--version) echo "0.0.0"; exit 0;;
+esac
+# évite tout bruit qui perturbe Next
+exit 0

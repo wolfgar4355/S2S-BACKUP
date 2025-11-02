@@ -1,0 +1,323 @@
+  <div class="container">
+    ${body}
+  </div>
+<script>
+(async function(){
+  try{
+    const r = await fetch('${API}/api/health'); 
+    const chip = document.getElementById('apiChip');
+    chip.classList.add(r.ok ? 'ok' : 'bad');
+    chip.textContent = 'API: ' + (r.ok ? 'OK' : 'OFF');
+  }catch(e){
+    const chip = document.getElementById('apiChip');
+    chip.classList.add('bad'); chip.textContent = 'API: OFF';
+  }
+})();
+
+// Expose API base for client-side calls
+window.S2S_API = '${API}';
+
+// Generic "Generate" handler for all generator pages
+document.addEventListener('DOMContentLoaded', ()=>{
+  const form  = document.getElementById('form');
+  const genBtn = document.getElementById('genBtn');
+  if (!form || !genBtn) return;
+
+  genBtn.addEventListener('click', async ()=>{
+    const data = Object.fromEntries(new FormData(form).entries());
+    const path = location.pathname;
+    let kind = 'generic';
+        const theme = data.theme ||Theme: ${theme}
+Synopsis: a neutral, system-agnostic ${kind} suggestion.`;
+      }
+      if (titleField && !titleField.value) {
+        titleField.value = (data.title || data.name || kind) + ' — ' + (Date.now() % 10000);
+      }
+      alert('Generated (local mock) ✔');
+    }
+  });
+});
+</script>
+</body></html>`;
+}
+
+/* ---------- Accueil & ToC ---------- */
+function home(){
+  return layout({
+    title:'Sheet2Scene — Accueil',
+    body: `
+    <div class="book">
+      <div class="cover">
+        <div>
+          <div class="title">Sheet2Scene</div>
+          <div class="subtitle">The RPG sheet-to-scene engine</div>
+        </div>
+        <form class="login" onsubmit="event.preventDefault(); location.href='/toc'">
+          <h3>Sign in</h3>
+          <input placeholder="Email" required>
+          <input placeholder="Password" type="password" required>
+          <button type="submit">Enter the grimoire</button>
+          <div class="note">Démo locale — pas d’envoi réseau.</div>
+        </form>
+      </div>
+    </div>
+    `
+  });
+}
+
+function toc(){
+  return layout({
+    title:'Table des matières',
+    body: `
+      <div class="paper margins">
+        <div class="ribbons">
+          <div class="ribbon" title="Fantasy"></div>
+          <div class="ribbon" title="Space Opera"></div>
+          <div class="ribbon" title="Noir"></div>
+          <div class="ribbon" title="Post-Apoc"></div>
+          <div class="ribbon" title="Cyberpunk"></div>
+        </div>
+        <h2 style="margin:6px 0 10px">Table des matières</h2>
+        <div class="list">
+          <a href="/world/fantasy"><span>🧙 Fantasy</span><span>→</span></a>
+          <a href="/world/space-opera"><span>🚀 Space Opera</span><span>→</span></a>
+          <a href="/world/noir"><span>🕵️ Noir</span><span>→</span></a>
+          <a href="/world/post-apoc"><span>☢️ Post-Apocalypse</span><span>→</span></a>
+          <a href="/world/cyberpunk"><span>🦾 Cyberpunk</span><span>→</span></a>
+        </div>
+      </div>
+    `
+  });
+}
+
+/* ---------- Utilitaires stockage local ---------- */
+function itemListScript(key){
+  return `
+    const list = document.getElementById('list');
+    function load(){
+      const items = JSON.parse(localStorage.getItem('${key}')||'[]');
+      list.innerHTML = items.length ? '' : '<div class="note">No entries yet.</div>';
+      items.forEach((it,idx)=>{
+        const a = document.createElement('a'); a.href='#';
+        const name = it.name || it.title || it.worldName || it.id || 'Untitled';
+        a.innerHTML = '<span>'+ name +'</span><span>🗑️</span>';
+        a.onclick = (e)=>{ e.preventDefault(); del(idx); };
+        list.appendChild(a);
+      });
+    }
+    function del(i){
+      const items = JSON.parse(localStorage.getItem('${key}')||'[]');
+      items.splice(i,1);
+      localStorage.setItem('${key}', JSON.stringify(items));
+      load();
+    }
+    load();
+  `;
+}
+function saveScript(key, buildObj){
+  return `
+    const form = document.getElementById('form');
+    const preview = document.getElementById('preview');
+    form.img?.addEventListener('change', (e)=>{
+      const f = e.target.files?.[0];
+      if(!f){ if(preview) preview.textContent='No image yet.'; return; }
+      const r = new FileReader();
+      r.onload = () => { if(preview) preview.innerHTML = '<img src="'+r.result+'" style="max-width:100%;border-radius:8px"/>'; };
+      r.readAsDataURL(f);
+    });
+    form.addEventListener('submit', (e)=>{
+      e.preventDefault();
+      const data = new FormData(form);
+      const base = ${buildObj};
+      const img = form.img?.files?.[0];
+      if(img){
+        const fr = new FileReader();
+        fr.onload = ()=>save({...base, img: fr.result});
+        fr.readAsDataURL(img);
+      } else {
+        save(base);
+      }
+    });
+    function save(obj){
+      const items = JSON.parse(localStorage.getItem('${key}')||'[]');
+      items.unshift({ ...obj, ts: Date.now() });
+      localStorage.setItem('${key}', JSON.stringify(items));
+      form.reset(); if(preview) preview.textContent='No image yet.';
+      if (typeof load === 'function') load();
+    }
+  `;
+}
+
+/* ---------- Space Opera — World ---------- */
+function generatorWorld(){
+  return layout({
+    title:'Space Opera — World Generator',
+    body: `
+      <div class="paper margins">
+        <h2>🌌 Space Opera — World Generator</h2>
+        <form id="form">
+          <div class="field"><label><b>World Name</b></label><input name="name" placeholder="ex: Athelia Prime" /></div>
+          <div class="field"><label><b>Synopsis</b> (text description)</label><textarea name="desc" rows="4" placeholder="Short pitch of the world..."></textarea></div>
+          <div class="field"><label><b>Reference Image</b></label><input type="file" name="img" accept="image/*" /><div id="preview" class="preview">No image yet.</div></div>
+          <div class="row"><button class="btn" type="submit">Add to the world</button><button class="btn" type="button" id="genBtn">Generate</button><a class="btn" href="/world/space-opera">Back</a></div>
+          <p class="note">Démo locale (localStorage).</p>
+        </form>
+        <hr style="margin:16px 0;border:0;border-top:1px dashed #0004"/>
+        <h3>Entries</h3><div id="list" class="list"></div>
+      </div>
+      <script>
+        ${saveScript('s2s_space_worlds', `({ name: data.get('name'), desc: data.get('desc') })`)}
+        ${itemListScript('s2s_space_worlds')}
+      </script>
+    `
+  });
+}
+
+/* ---------- Space Opera — Character / NPC ---------- */
+function generatorCharacter(){
+  return layout({
+    title:'Space Opera — Character / NPC',
+    body: `
+      <div class="paper margins">
+        <h2>👤 Character / NPC</h2>
+        <form id="form">
+          <div class="field"><label><b>Name</b></label><input name="name" placeholder="ex: Kael Varyn"/></div>
+          <div class="row">
+            <div class="field" style="flex:1"><label><b>Species</b></label><input name="species" placeholder="Human, Twi'lek-like, Synth..."/></div>
+            <div class="field" style="flex:1"><label><b>Role/Class</b></label><input name="role" placeholder="Pilot, Diplomat, Smuggler..."/></div>
+            <div class="field" style="flex:1"><label><b>Level</b></label><input name="level" type="number" min="1" max="20" value="1"/></div>
+          </div>
+          <div class="field"><label><b>Backstory</b> (text description)</label><textarea name="desc" rows="4"></textarea></div>
+          <div class="field"><label><b>Reference Image</b></label><input type="file" name="img" accept="image/*"/><div id="preview" class="preview">No image yet.</div></div>
+          <div class="row"><button class="btn" type="submit">Add to the world</button><button class="btn" type="button" id="genBtn">Generate</button><a class="btn" href="/world/space-opera">Back</a></div>
+        </form>
+        <h3 style="margin-top:16px">Entries</h3><div id="list" class="list"></div>
+      </div>
+      <script>
+        ${saveScript('s2s_space_characters', `({
+          name: data.get('name'), species: data.get('species'),
+          role: data.get('role'), level: data.get('level'), desc: data.get('desc')
+        })`)}
+        ${itemListScript('s2s_space_characters')}
+      </script>
+    `
+  });
+}
+
+/* ----------rn layout({
+    tile:'Space Opera — Monster',
+    body: `
+      <div class="paper margins">
+        <h2>👾 Monster</h2>
+        <form id="form">
+         <div class="row">
+            <div class="field" style="flex:1"><label><b>Name</b></label><input name="name" placeholder="ex: Void Serpent"/></div>
+            <div class="field" style="flex:1"><label><b>CR</b></label><input name="cr" type="number" min="0" step="0.5" value="1"/></div>
+            <div class="field" style="flex:1"><label><b>Habitat</b></label><input name="habitat" placeholder="Gas giants, derelict stations..."/></div>
+          </div>
+         class="field"><label><b>Abilities / Traits</b></label><textarea name="traits" rows="3" placeholder="Camouflage, acid spit, psionics..."></textarea></div>
+          <div class="field"><label><b>Reference Image</b></label><input type="file" name="img" accept="image/*"/><div id="preview" class="preview">No image yet.</div></div>
+          <div class="row"><button class="btn" type="submit">Add to the world</button><button class="btn" type="button" id="genBtn">Generate</button><a class="btn" href="/world/space-opera">Back</a></div>
+        </form
+        <h3 style="margin-top:16px">Entries</h3><div id="list" class="list"></div>
+      </div>
+      <script>
+        ${saveScript('s2s_space_monsters', `(      name: data.get('name'), cr: data.get('cr'), habitat: data.get('habitat'), traits: data.get('traits')
+        })`)}
+        ${itemListScript('s2s_space_monsters')}
+      </script>
+    
+  });
+}
+
+/* ---------- Space Opera — Loot ---------- */
+function generatorLoot(){
+  return layout title:'Space Opera — Loot',
+    body: `
+      <div class="paper margins">
+       <h2>💎 Loot</h2>
+        <form id="form">
+          <div class="row">
+            <div class="field" style="flex:1"><label><b>Associated Creature/Owner</b></label><input name="owner" placeholder="ex: pirate lord"/></div>
+            <div class="field" style="flex:1"><label><b>CR / Tier</b></label><input name="tier" type="number" min="0" step="0.5" value="1"/></div>
+          </div>
+          <div class="field"><label><b>Specs / Tables</b> (text)</label><textarea name="specs" rows="3" placeholder="Neutral, non-branded tables..."></textarea></div>
+    <div class="field"><label><b>Reference Image</b></label><input type="file" name="img" accept="image/*"/><div id="preview" class="preview">No image yet.</div></div>
+          <div class="row"><button class="btn" type="submit">Add to the world</button><button class="btn" type="button" id="genBtn">Generate</button><a class="btn" href="/world/space-opera">Back</a></div>
+        </form>
+        <h3 style="margin-top:16px">Entries</h3><div id="list" class="list"></div>
+      </div>
+      <scrpt>
+        ${saveScript('s2s_space_loot', `({
+          owner: data.get('owner'), tier: data.get('tier'), specs: data.get('specs')
+        })`)}
+        ${itemListScript('s2s_space_loot')}
+      </scr   `
+  });
+}
+/* ---------- Space Opera — Quest ---------- */
+function generatorQuest(){
+  return layout({
+    title:'Space pera — Quest',
+    body: `
+      <div class="paper margins">
+        <h2>📜 Quest</h2>
+        <form id="
+          <div class="row">
+            <div class="feld" style="flex:1"><label><b>Title</b></label><input name="title" placeholder="ex: Echoes of Aether"/></div>
+            <div class="field" style="flex:1"><label><b>Party Size</b></label><input name="party" type="number" min="1" max="6" value="4"/></div>
+            <div class="field" style="flex:1"><label><b>Avg Level</b></            <div class="field" style="flex:1">
+              <label><b>Length</b></lab           <select name="length">
+                <option>one-shot</option>
+                <option>short (5-10 sessions)</option>
+                <option>long (to level 10)</option>
+               <option>epic (to level 20+)</option>
+              </select>
+            </div>
+            <div class="field" style="flex:1"><label><b>BBEG</b></label><input name="bbeg" placeholder="main antagonist"/></div>
+           <div class="field" style="flex:1"><label><b>Theme</b></label><input name="theme" placeholder="exploration, intrigue, war..."/></div>
+          </div>
+     <div class="field"><label><b>Synopsis</b></label><textarea name="desc" rows="4" placeholder="Captivating story outline..."></textarea></div>
+          div class="field"><label><b>Reference Image</b></label><input type="file" name="img" accept="image/*"/><div id="preview" class="preview">No image yet.</div></div>
+          <div class="row"><button class="btn" type="submit">Add to the world</button><button class="btn" type="button" id="genBtn">Generate</button><a class="btn" href="/world/space-opera">Back</a></div>
+        </form>
+        <h3 style="margin-top:16px">Entries</h3><div id="list" class="list"></div>
+      </div
+      <script>
+        ${saveScript('s2s_space_quests', `({
+          title: data.get('title'), party: data.get('party'), level: data.get('level'),
+          length: data.get('length'), bbeg:data.get('bbeg'), theme: data.get('theme'), desc: data.get('desc')
+        })`)}
+}
+/* ---------- Space Opera — Map ---------- */
+function generatorMap(){
+  return layout({
+    title:'Space Opera  Map / Dungeon',
+    body: `
+      <div class="paper 🗺️ Map / Dungeon / Building</h2>
+          <div class="row">
+            <div class="field" style="flex:1">
+              <label><b>Type</b></label>
+              <select name="typ">
+                <option>world</option>
+                <option>decor</o               <option>dungeon</option>
+               <option>building</option>
+                <option>castle</option>
+                <option>city</option>
+             </select>
+            </div>
+            <div class="field" style="flex:1"><label><b>Size</b></label><input name="size" placeholder="small/medium/large or 2048x2048"/></div>
+   div class="field" style="flex:1"><label><b>Seed</b></label><input name="seed" placeholder="optional deterministic seed"/></div>
+          </dv>
+          <div class="field"><label><b>Text Prompt</b></label><textarea name="prompt" rows="3" placeholder="Neutral, non-branded prompt…"></textarea></div>
+          <div class="field"><label><b>Reference Image</b></label><input type="file" name="img" accept="image/*"/><div id="preview" class="preview">No image yet.</div></div>
+          <div class="row"><button class="btn" type="submit">Add to the world</button><button class="btn" type="button" id="genBtn">Generate</button><a class="btn" href="/world/space-opera">Back</a></div>
+        </form
+        <h3 style="margin-top:16px">Entries</h3><div id="list" class="list"></div>
+      </div>
+      <script>
+          type: data.get('type'), size: data.get('size'), s  });
+}
+
+/* ---------- Space Op
+

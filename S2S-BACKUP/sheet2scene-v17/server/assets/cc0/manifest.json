@@ -1,0 +1,24 @@
+{
+  "packs": [
+    {
+      "id": "poi-icons-basic",
+      "name": "POI Icons (Basic CC0)",
+      "file": "poi-icons-basic.zip",
+      "tags": [
+        "icons",
+        "cc0"
+      ],
+      "desc": "Petite collection d'icônes POI (SVG) génériques."
+    },
+    {
+      "id": "textures-parchment",
+      "name": "Textures parchemin (CC0)",
+      "file": "textures-parchment.zip",
+      "tags": [
+        "textures",
+        "cc0"
+      ],
+      "desc": "Textures papier/parchemin pour cartes."
+    }
+  ]
+}

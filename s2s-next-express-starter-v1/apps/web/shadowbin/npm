@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+# Faux npm : répond OK à tout, imprime une version si demandé
+case "$1" in
+  -v|--version) echo "10.9.0"; exit 0 ;;
+esac
+# avale silencieusement toute commande
+exit 0

@@ -1,0 +1,30 @@
+{
+  "Classic Fantasy": {
+    "medium": "Heroic fantasy portrait, medieval adventurer, parchment tone, soft rim light, studio headshot, 3/4 view, neutral background, ultra-clean skin, no text logo watermark",
+    "high": "Ultra-detailed fantasy portrait, ornate leather, subtle scars, cinematic key light, filmic bokeh, master painter style, 3/4 view, no text logo watermark"
+  },
+  "Grimdark": {
+    "medium": "Dark gritty warrior, worn armor, mud and soot, overcast lighting, muted palette, realistic pores, 3/4 view, no logo",
+    "high": "Gritty hyperreal portrait, scarred face, heavy armor texture, volumetric fog, desaturated tones, cinematic lens, no logo"
+  },
+  "Urban": {
+    "medium": "Modern investigator portrait, trench coat, soft noir lighting, office or street bokeh, realistic skin, no logo",
+    "high": "Stylized noir portrait, dramatic chiaroscuro, film grain, shallow DOF, premium lens, no logo"
+  },
+  "Sci-Fantasy": {
+    "medium": "Mage-tech hybrid portrait, subtle glowing runes and circuitry, neon rim light, clean skin, no logo",
+    "high": "Premium sci-fantasy portrait, intricate rune circuits, bioluminescent accents, cinematic backlight, no logo"
+  },
+  "Desert": {
+    "medium": "Nomad portrait, sand-worn fabrics, warm golden light, dunes bokeh, no logo",
+    "high": "Epic desert portrait, textured fabrics, sun-kissed skin, heat haze, cinematic light, no logo"
+  },
+  "Arctic": {
+    "medium": "Fur-lined outfit, frosted breath, cool blue lighting, snow bokeh, no logo",
+    "high": "Hyperreal arctic portrait, crystalline snow, wind-swept hair, high contrast cool tones, no logo"
+  },
+  "Galactic Saga": {
+    "medium": "Space opera portrait, sleek flight suit, starfield bokeh, subtle UI HUD reflections, no logo",
+    "high": "Heroic space opera portrait, dramatic rim lights, starship interior bokeh, premium lens flare, no logo"
+  }
+}

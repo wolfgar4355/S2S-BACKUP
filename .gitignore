@@ -1,0 +1,21 @@
+# Node / Next
+node_modules/
+.next/
+dist/
+out/
+.vercel/
+*.log
+*.log.txt
+*.pid
+
+# Secrets
+.env*
+.env.local
+
+# GROS FICHIERS (garde le repo léger)
+*.zip
+*.mp3
+*.wav
+*.mp4
+*.pptx
+*.msi
